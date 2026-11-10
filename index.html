@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' https://fonts.googleapis.com https://fonts.gstatic.com https://cdn.tailwindcss.com https://unpkg.com https://cdn.jsdelivr.net https://*.basemaps.cartocdn.com https://*.tile.openstreetmap.org data: blob:;"/>
+  <title>AirSense City - Sistem Monitoring Kualitas Udara Perkotaan Bandar Lampung</title>
+  
+  <!-- Fonts & Material Symbols -->
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet"/>
+  
+  <!-- Leaflet Map CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: { extend: {
+      colors: {
+        "surface":"#f8f9ff","background":"#f8f9ff","surface-bright":"#f8f9ff","surface-dim":"#cbdbf5",
+        "surface-container-lowest":"#ffffff","surface-container-low":"#eff4ff","surface-container":"#e5eeff",
+        "surface-container-high":"#dce9ff","surface-container-highest":"#d3e4fe","surface-variant":"#d3e4fe",
+        "surface-tint":"#306576","on-surface":"#0b1c30","on-background":"#0b1c30","on-surface-variant":"#40484b",
+        "outline":"#70787c","outline-variant":"#c0c8cb",
+        "primary":"#003441","on-primary":"#ffffff","primary-container":"#0f4c5c","on-primary-container":"#87bbce",
+        "primary-fixed":"#b6ebfe","primary-fixed-dim":"#9acee1","on-primary-fixed":"#001f28","on-primary-fixed-variant":"#114d5d",
+        "inverse-primary":"#9acee1","inverse-surface":"#213145","inverse-on-surface":"#eaf1ff",
+        "secondary":"#4059aa","on-secondary":"#ffffff","secondary-container":"#8fa7fe","on-secondary-container":"#1d3989",
+        "secondary-fixed":"#dce1ff","secondary-fixed-dim":"#b6c4ff","on-secondary-fixed":"#00164e","on-secondary-fixed-variant":"#264191",
+        "tertiary":"#003724","on-tertiary":"#ffffff","tertiary-container":"#005036","on-tertiary-container":"#53c896",
+        "tertiary-fixed":"#85f8c4","tertiary-fixed-dim":"#68dba9","on-tertiary-fixed":"#002114","on-tertiary-fixed-variant":"#005137",
+        "error":"#ba1a1a","on-error":"#ffffff","error-container":"#ffdad6","on-error-container":"#93000a"
+      },
+      borderRadius: { DEFAULT:"0.25rem", lg:"0.5rem", xl:"0.75rem", full:"9999px" },
+      spacing: {
+        "space-2xs":"0.25rem","space-xs":"0.5rem","space-sm":"0.75rem","space-md":"1rem","space-lg":"1.5rem",
+        "space-xl":"2rem","space-2xl":"3rem","margin":"1rem","margin-desktop":"2rem","gutter":"1.25rem","gutter-desktop":"1.5rem"
+      },
+      fontFamily: {
+        "display-hero":["Inter","sans-serif"],"headline-xl":["Inter","sans-serif"],"headline-xl-mobile":["Inter","sans-serif"],"headline-lg":["Inter","sans-serif"],
+        "headline-md":["Inter","sans-serif"],"body-lg":["Inter","sans-serif"],"body-md":["Inter","sans-serif"],"body-sm":["Inter","sans-serif"],
+        "label-bold":["Inter","sans-serif"],"label-sm":["Inter","sans-serif"],"metric-huge":["Inter","sans-serif"],"metric-huge-mobile":["Inter","sans-serif"],"metric-lg":["Inter","sans-serif"]
+      },
+      fontSize: {
+        "display-hero":["48px",{lineHeight:"56px",letterSpacing:"-0.03em",fontWeight:"800"}],
+        "headline-xl":["36px",{lineHeight:"44px",letterSpacing:"-0.025em",fontWeight:"700"}],
+        "headline-xl-mobile":["28px",{lineHeight:"34px",letterSpacing:"-0.02em",fontWeight:"700"}],
+        "headline-lg":["28px",{lineHeight:"36px",letterSpacing:"-0.02em",fontWeight:"700"}],
+        "headline-md":["20px",{lineHeight:"28px",letterSpacing:"-0.015em",fontWeight:"600"}],
+        "body-lg":["16px",{lineHeight:"24px",fontWeight:"400"}],
+        "body-md":["14px",{lineHeight:"20px",fontWeight:"400"}],
+        "body-sm":["13px",{lineHeight:"18px",fontWeight:"400"}],
+        "label-bold":["12px",{lineHeight:"16px",letterSpacing:"0.04em",fontWeight:"700"}],
+        "label-sm":["11px",{lineHeight:"14px",letterSpacing:"0.02em",fontWeight:"600"}],
+        "metric-huge":["44px",{lineHeight:"48px",letterSpacing:"-0.03em",fontWeight:"800"}],
+        "metric-huge-mobile":["34px",{lineHeight:"38px",letterSpacing:"-0.02em",fontWeight:"800"}],
+        "metric-lg":["32px",{lineHeight:"36px",letterSpacing:"-0.02em",fontWeight:"700"}]
+      }
+    } }
+  };
+  </script>
+  <style>
+    @layer base { html,body{margin:0;padding:0;} body{overscroll-behavior:none;} }
+    ::-webkit-scrollbar{display:none;}
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      vertical-align: middle;
+    }
+    .fill-1 {
+      font-variation-settings: 'FILL' 1, 'wght' 500;
+    }
+  </style>
+
+  <!-- External Libraries -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-surface font-body-md text-on-surface antialiased min-h-screen flex flex-col justify-between">
+
+  <!-- ================= APP SHELL: HEADER (Fixed, 80px) ================= -->
+  <header class="fixed top-0 w-full z-50 bg-surface-container-lowest/95 backdrop-blur-md shadow-[0_1px_8px_rgba(0,0,0,0.04)]">
+    <div class="h-20 px-gutter-desktop max-w-7xl mx-auto flex items-center justify-between">
+      
+      <!-- Kiri: Dua Logo (Pemkot Bandar Lampung & UTI) + Nama Aplikasi -->
+      <div class="flex items-center gap-space-sm cursor-pointer" onclick="navigateTo('dashboard')">
+        <div class="flex items-center gap-2">
+          <!-- Logo Pemkot Bandar Lampung (1794305676149_image.png) -->
+          <img src="assets/1794305676149_image.png" alt="Logo Pemerintah Kota Bandar Lampung" class="w-10 h-10 object-contain drop-shadow-sm"/>
+          <!-- Logo Universitas Teknokrat Indonesia (IMG_5280.png) -->
+          <img src="assets/IMG_5280.png" alt="Logo Universitas Teknokrat Indonesia" class="w-10 h-10 object-contain drop-shadow-sm"/>
+        </div>
+        
+        <!-- Pemisah Vertikal Tipis -->
+        <div class="h-9 w-px bg-outline-variant/60 hidden sm:block"></div>
+
+        <!-- Nama Sistem & Subjudul -->
+        <div class="flex flex-col justify-center">
+          <div class="flex items-center gap-2">
+            <span class="font-headline-md text-headline-md text-primary tracking-tight leading-none font-bold">AirSense City</span>
+            <span id="user-role-badge" class="hidden sm:inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-surface-container-high text-on-surface-variant">Publik</span>
+          </div>
+          <span class="font-label-sm text-on-surface-variant mt-0.5 leading-none">Sistem Monitoring Kualitas Udara Perkotaan</span>
+        </div>
+      </div>
+
+      <!-- Kanan: Navigasi Desktop + Login + Avatar -->
+      <div class="flex items-center gap-space-sm">
+        
+        <!-- Nav Desktop (hidden xl:flex) -->
+        <nav class="hidden xl:flex items-center gap-1">
+          <a href="#" data-path="dashboard" class="px-space-sm py-space-xs rounded-lg font-label-bold transition-colors bg-primary-container text-on-primary shadow-sm" aria-current="page">Dashboard</a>
+          <a href="#" data-path="peta" class="px-space-sm py-space-xs rounded-lg font-label-bold transition-colors text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface">Peta</a>
+          <a href="#" data-path="analitik" class="px-space-sm py-space-xs rounded-lg font-label-bold transition-colors text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface">Analitik</a>
+          <a href="#" data-path="peringatan" class="px-space-sm py-space-xs rounded-lg font-label-bold transition-colors text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface">Peringatan</a>
+          <a href="#" data-path="rekomendasi" class="px-space-sm py-space-xs rounded-lg font-label-bold transition-colors text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface">Rekomendasi</a>
+          <a href="#" data-path="tentang" class="px-space-sm py-space-xs rounded-lg font-label-bold transition-colors text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface">Tentang</a>
+          <a href="#" data-path="simulasi" class="px-space-sm py-space-xs rounded-lg font-label-bold transition-colors text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface flex items-center gap-1">
+            <span class="material-symbols-outlined text-[16px]">tune</span> Kontrol Simulasi
+          </a>
+          <a href="#" data-path="admin" class="px-space-sm py-space-xs rounded-lg font-label-bold transition-colors text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface flex items-center gap-1">
+            <span class="material-symbols-outlined text-[16px]">admin_panel_settings</span> Panel Admin
+          </a>
+        </nav>
+
+        <!-- Tombol Login / Role Switcher -->
+        <button id="btn-login-header" class="px-space-md py-space-xs rounded-lg bg-primary-container text-on-primary font-label-bold hover:bg-primary shadow-sm transition-all text-xs">
+          Login
+        </button>
+
+        <!-- Avatar Pengguna -->
+        <div class="relative cursor-pointer" onclick="navigateTo('simulasi')">
+          <div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white text-xs font-bold shadow-sm ring-2 ring-surface-variant">
+            DLH
+          </div>
+        </div>
+
+        <!-- Tombol Hamburger Mobile -->
+        <button id="btn-mobile-menu" class="xl:hidden p-2 rounded-lg text-primary hover:bg-surface-container-high focus:outline-none">
+          <span class="material-symbols-outlined text-[28px]">menu</span>
+        </button>
+      </div>
+
+    </div>
+
+    <!-- Mobile Menu Drawer (Dropdown) -->
+    <div id="mobile-menu-drawer" class="hidden xl:hidden bg-surface-container-lowest border-b border-surface-container p-4 flex flex-col gap-2 shadow-md">
+      <a href="#" data-path="dashboard" class="px-4 py-2 rounded-lg font-label-bold text-on-surface hover:bg-surface-container-high">Dashboard</a>
+      <a href="#" data-path="peta" class="px-4 py-2 rounded-lg font-label-bold text-on-surface hover:bg-surface-container-high">Peta Interaktif</a>
+      <a href="#" data-path="analitik" class="px-4 py-2 rounded-lg font-label-bold text-on-surface hover:bg-surface-container-high">Analitik & Hotspot</a>
+      <a href="#" data-path="peringatan" class="px-4 py-2 rounded-lg font-label-bold text-on-surface hover:bg-surface-container-high">Peringatan Kualitas Udara</a>
+      <a href="#" data-path="rekomendasi" class="px-4 py-2 rounded-lg font-label-bold text-on-surface hover:bg-surface-container-high">Rekomendasi Kesehatan</a>
+      <a href="#" data-path="tentang" class="px-4 py-2 rounded-lg font-label-bold text-on-surface hover:bg-surface-container-high">Tentang Sistem</a>
+      <a href="#" data-path="simulasi" class="px-4 py-2 rounded-lg font-label-bold text-on-surface hover:bg-surface-container-high flex items-center gap-2">
+        <span class="material-symbols-outlined text-[18px]">tune</span> Kontrol Simulator IoT
+      </a>
+      <a href="#" data-path="admin" class="px-4 py-2 rounded-lg font-label-bold text-on-surface hover:bg-surface-container-high flex items-center gap-2">
+        <span class="material-symbols-outlined text-[18px]">admin_panel_settings</span> Panel Administrasi (DLH)
+      </a>
+    </div>
+  </header>
+
+  <!-- ================= APP MAIN CONTENT ================= -->
+  <main class="w-full pt-20 bg-surface flex-grow">
+    <div class="w-full px-gutter-desktop py-space-lg flex flex-col gap-space-lg max-w-7xl mx-auto">
+
+      <!-- ================= VIEW: DASHBOARD ================= -->
+      <section id="view-dashboard" class="flex flex-col gap-space-lg">
+        
+        <!-- Header Judul Halaman + Status Sinkronisasi + Aksi -->
+        <div class="flex flex-col md:flex-row md:items-end justify-between gap-space-md">
+          <div>
+            <div class="flex flex-wrap items-center gap-2 mb-1">
+              <h1 class="font-headline-xl text-headline-xl text-primary tracking-tight font-bold">
+                Monitoring Kualitas Udara
+              </h1>
+              <!-- Badge Wajib: Data Simulasi (SKILL.md Bagian 2 Aturan 1) -->
+              <span class="px-space-xs py-0.5 rounded-full bg-surface-variant text-on-secondary-fixed font-label-sm font-bold flex items-center gap-1.5 shadow-sm">
+                <span class="relative flex h-2 w-2">
+                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-secondary opacity-75"></span>
+                  <span class="relative inline-flex rounded-full h-2 w-2 bg-secondary"></span>
+                </span>
+                Data Simulasi
+              </span>
+              <!-- Standard Badge -->
+              <span class="px-space-xs py-0.5 rounded-full bg-surface-container-high text-on-surface-variant font-label-sm">
+                SNI 19-4102-1996 / Permen LHK 14/2020
+              </span>
+            </div>
+
+            <!-- Baris Meta Sinkronisasi -->
+            <div class="flex flex-wrap items-center gap-2 font-body-md text-on-surface-variant">
+              <span class="material-symbols-outlined text-[18px]">schedule</span>
+              <span id="meta-sync-time">Diperbarui: Baru saja</span>
+              <span class="text-outline-variant">•</span>
+              <span>5 Titik Pantau Aktif (Kota Bandar Lampung)</span>
+            </div>
+          </div>
+
+          <!-- Kanan: Tombol Aksi (Segarkan & Unduh PDF) -->
+          <div class="flex items-center gap-space-xs shrink-0">
+            <button id="btn-refresh" class="px-space-md py-space-xs rounded-lg bg-surface-container-lowest text-on-surface shadow-sm hover:bg-surface-container-high transition-colors font-label-bold flex items-center gap-1.5 text-xs">
+              <span class="material-symbols-outlined text-[18px]">autorenew</span>
+              Segarkan
+            </button>
+            <button id="btn-download-report" class="px-space-md py-space-xs rounded-lg bg-primary-container text-on-primary hover:bg-primary transition-colors font-label-bold flex items-center gap-1.5 shadow-sm text-xs">
+              <span class="material-symbols-outlined text-[18px]">download</span>
+              Unduh Laporan Harian (PDF)
+            </button>
+          </div>
+        </div>
+
+        <!-- Banner Peringatan Kota (Hanya Muncul Bila Ada Titik >= Tidak Sehat) -->
+        <div id="city-alert-banner-container"></div>
+
+        <!-- 4 Kartu Sebaran ISPU -->
+        <div id="distribution-cards-container" class="grid sm:grid-cols-2 lg:grid-cols-4 gap-space-md"></div>
+
+        <!-- Split Grid 7 / 5: Fokus Pemantauan & Wilayah Terbersih/Paling Terpapar -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-space-lg items-start">
+          
+          <!-- Kiri: Fokus Pemantauan Wilayah (7/12) -->
+          <div class="lg:col-span-7 bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col gap-space-md">
+            
+            <!-- Header Kartu Fokus -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-space-sm pb-space-xs border-b border-surface-container">
+              <div>
+                <span class="font-label-bold uppercase text-primary tracking-wide block">Fokus Pemantauan Wilayah</span>
+                <span class="font-body-sm text-on-surface-variant">Pilih stasiun telemetri untuk memantau data terperinci</span>
+              </div>
+
+              <!-- Station Select Dropdown -->
+              <div class="relative min-w-[240px]">
+                <select id="select-station" class="w-full bg-surface-container-low font-label-bold text-on-surface px-space-sm py-2 rounded-lg appearance-none focus:ring-2 focus:ring-primary-container shadow-sm cursor-pointer pr-8 text-xs">
+                  <option value="01">Pusat Kota (Tanjung Karang)</option>
+                  <option value="02">Area Kampus (Kedaton - UTI)</option>
+                  <option value="03">Kawasan Industri (Panjang)</option>
+                  <option value="04">Area Permukiman (Kemiling)</option>
+                  <option value="05">Kawasan Transportasi (Rajabasa)</option>
+                </select>
+                <span class="material-symbols-outlined absolute right-2.5 top-2.5 text-on-surface-variant pointer-events-none text-[20px]">
+                  arrow_drop_down
+                </span>
+              </div>
+            </div>
+
+            <!-- Sorotan ISPU (Cincin SVG & Sensor Telemetri) -->
+            <div class="bg-surface-container-low rounded-xl p-space-md flex flex-col sm:flex-row items-center justify-between gap-space-md">
+              
+              <!-- Cincin ISPU SVG -->
+              <div class="flex items-center gap-space-md">
+                <div class="relative w-28 h-28 flex items-center justify-center shrink-0">
+                  <svg viewBox="0 0 100 100" class="w-full h-full -rotate-90">
+                    <!-- Track Circle -->
+                    <circle cx="50" cy="50" r="42" stroke="currentColor" stroke-width="10" fill="transparent" class="text-surface-variant"/>
+                    <!-- Active Fill Circle -->
+                    <circle id="focus-ring-fill" cx="50" cy="50" r="42" stroke="currentColor" stroke-width="10" stroke-linecap="round" fill="transparent"
+                            stroke-dasharray="264" stroke-dashoffset="160" class="text-secondary transition-all duration-700 ease-out"/>
+                  </svg>
+                  <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                    <span id="focus-ispu-number" class="font-metric-huge text-metric-huge leading-none font-extrabold text-secondary">76</span>
+                    <span class="font-label-sm font-bold text-on-surface-variant uppercase tracking-wider text-[10px] mt-0.5">ISPU</span>
+                  </div>
+                </div>
+
+                <!-- Info Kategori -->
+                <div>
+                  <span id="focus-status-pill" class="px-space-sm py-1 rounded-full font-label-bold text-xs inline-flex items-center gap-1 bg-secondary-fixed text-on-secondary-fixed">
+                    Sedang (ISPU 76)
+                  </span>
+                  <p id="focus-status-desc" class="font-body-sm text-on-surface-variant mt-1.5 max-w-xs leading-snug">
+                    Kualitas udara masih dapat diterima pada kesehatan manusia, hewan, dan tumbuhan.
+                  </p>
+                </div>
+              </div>
+
+              <!-- Blok Sensor Telemetri -->
+              <div class="w-full sm:w-auto sm:border-l border-outline-variant/30 sm:pl-space-md flex flex-col justify-center">
+                <span class="font-label-sm text-on-surface-variant uppercase tracking-wide">Sensor Telemetri IoT</span>
+                <span id="focus-sensor-model" class="font-headline-md text-primary font-bold mt-0.5">PMS7003 & MQ136</span>
+                <span class="font-label-sm text-tertiary flex items-center gap-1.5 mt-1 font-semibold">
+                  <span class="w-2 h-2 rounded-full bg-tertiary animate-pulse"></span> Sinyal Optimal (LoRaWAN)
+                </span>
+              </div>
+
+            </div>
+
+            <!-- Grid 6 Parameter Terukur -->
+            <div id="focus-params-grid" class="grid grid-cols-2 sm:grid-cols-3 gap-space-xs"></div>
+
+            <!-- Kartu Rekomendasi Tindakan Warga (Tiga Sel Sesuai Kategori) -->
+            <div class="border border-surface-container rounded-xl p-space-md bg-surface-container-lowest">
+              <div class="flex items-center gap-2 mb-2">
+                <span class="material-symbols-outlined text-primary text-[22px]">health_and_safety</span>
+                <h4 class="font-headline-md text-primary font-bold text-base">Rekomendasi Tindakan Warga</h4>
+              </div>
+              <p class="font-body-md text-on-surface-variant text-xs mb-3">
+                Panduan praktis beraktivitas bagi masyarakat umum dan kelompok sensitif di sekitar stasiun terpilih:
+              </p>
+
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-space-xs text-xs">
+                <!-- Sel 1: Masker -->
+                <div class="bg-surface-container-low rounded-lg p-space-xs flex flex-col gap-1">
+                  <div class="flex items-center gap-1.5 text-secondary font-label-bold">
+                    <span class="material-symbols-outlined text-[18px]">masks</span>
+                    Pakai Masker
+                  </div>
+                  <span id="rec-mask-text" class="font-body-sm text-on-surface-variant">Disarankan untuk kelompok sensitif</span>
+                </div>
+
+                <!-- Sel 2: Ventilasi Ruangan -->
+                <div class="bg-surface-container-low rounded-lg p-space-xs flex flex-col gap-1">
+                  <div class="flex items-center gap-1.5 text-secondary font-label-bold">
+                    <span class="material-symbols-outlined text-[18px]">window</span>
+                    Ventilasi Ruangan
+                  </div>
+                  <span id="rec-vent-text" class="font-body-sm text-on-surface-variant">Ventilasi normal di luar jam sibuk</span>
+                </div>
+
+                <!-- Sel 3: Olahraga Luar Ruang -->
+                <div class="bg-surface-container-low rounded-lg p-space-xs flex flex-col gap-1">
+                  <div class="flex items-center gap-1.5 text-secondary font-label-bold">
+                    <span class="material-symbols-outlined text-[18px]">fitness_center</span>
+                    Olahraga Luar Ruang
+                  </div>
+                  <span id="rec-outdoor-text" class="font-body-sm text-on-surface-variant">Aktivitas normal di luar ruangan</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Kanan: Wilayah Terbersih & Paling Terpapar (5/12) -->
+          <div id="best-worst-container" class="lg:col-span-5 flex flex-col gap-space-lg"></div>
+
+        </div>
+
+        <!-- Daftar 5 Titik Pantau Kota Bandar Lampung (#lokasi-pantau) -->
+        <div id="lokasi-pantau" class="flex flex-col gap-space-md pt-space-md">
+          <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-2 border-b border-surface-container pb-space-xs">
+            <div>
+              <h3 class="font-headline-md text-primary font-bold text-xl">Daftar Titik Pemantauan Kualitas Udara</h3>
+              <p class="font-body-sm text-on-surface-variant">Pemantauan real-time sensor mikrokontroler berbasis IoT di seluruh kecamatan Kota Bandar Lampung</p>
+            </div>
+            <span class="font-label-sm text-on-surface-variant italic">Diurutkan berdasarkan keparahan ISPU</span>
+          </div>
+
+          <!-- Grid Kartu Stasiun Pantau -->
+          <div id="station-cards-grid" class="grid md:grid-cols-2 lg:grid-cols-3 gap-space-md"></div>
+        </div>
+
+      </section>
+
+      <!-- ================= VIEW: PETA INTERAKTIF ================= -->
+      <section id="view-peta" class="hidden flex flex-col gap-space-md">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-space-sm">
+          <div>
+            <h2 class="font-headline-xl text-headline-xl text-primary font-bold">Peta Kualitas Udara Spasial</h2>
+            <p class="font-body-md text-on-surface-variant">Distribusi geospasial 5 titik sensor telemetri dan zona sebaran kualitas udara di Kota Bandar Lampung</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-surface-container-high text-on-surface-variant">
+              Basemap: OpenStreetMap
+            </span>
+          </div>
+        </div>
+
+        <!-- Map Container -->
+        <div class="bg-surface-container-lowest rounded-xl p-space-xs shadow-sm border border-surface-container relative">
+          <div id="leaflet-map-container" class="w-full h-[580px] rounded-lg z-10"></div>
+          
+          <!-- Legenda ISPU Floating -->
+          <div class="absolute bottom-6 right-6 z-20 bg-white/95 backdrop-blur-md p-space-sm rounded-xl shadow-lg border border-surface-container max-w-xs text-xs font-sans">
+            <h5 class="font-bold text-primary mb-2 flex items-center gap-1">
+              <span class="material-symbols-outlined text-[16px]">map</span> Legenda Kategori ISPU
+            </h5>
+            <div class="flex flex-col gap-1.5">
+              <div class="flex items-center gap-2">
+                <span class="w-3.5 h-3.5 rounded-full bg-[#005036]"></span>
+                <span class="font-semibold text-gray-800">Baik (0 - 50)</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="w-3.5 h-3.5 rounded-full bg-[#4059aa]"></span>
+                <span class="font-semibold text-gray-800">Sedang (51 - 100)</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="w-3.5 h-3.5 rounded-full bg-[#ba1a1a]"></span>
+                <span class="font-semibold text-gray-800">Tidak Sehat (101 - 200)</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="w-3.5 h-3.5 rounded-full bg-[#93000a]"></span>
+                <span class="font-semibold text-gray-800">Sangat Tidak Sehat (201 - 300)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= VIEW: ANALITIK & HOTSPOT ================= -->
+      <section id="view-analitik" class="hidden flex flex-col gap-space-lg">
+        <div>
+          <h2 class="font-headline-xl text-headline-xl text-primary font-bold">Analitik Telemetri & Deteksi Hotspot</h2>
+          <p class="font-body-md text-on-surface-variant">Analisis tren riwayat 24 jam dan deteksi titik panas pencemaran udara berbasis konsistensi waktu (FR-HOT)</p>
+        </div>
+
+        <!-- Filter Parameter -->
+        <div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex flex-wrap items-center justify-between gap-space-sm">
+          <div class="flex items-center gap-2">
+            <span class="font-label-bold text-primary text-xs uppercase tracking-wider">Parameter Grafik:</span>
+            <button data-chart-param="ispu" class="px-space-sm py-1 rounded-lg font-label-bold text-xs bg-primary-container text-on-primary shadow-sm">ISPU</button>
+            <button data-chart-param="pm25" class="px-space-sm py-1 rounded-lg font-label-bold text-xs bg-surface-container-high text-on-surface hover:bg-surface-container-highest">PM2.5</button>
+            <button data-chart-param="pm10" class="px-space-sm py-1 rounded-lg font-label-bold text-xs bg-surface-container-high text-on-surface hover:bg-surface-container-highest">PM10</button>
+          </div>
+          <span class="text-xs text-on-surface-variant font-medium">Batas Baku Mutu: PM2.5 (55 µg/m³) • PM10 (75 µg/m³)</span>
+        </div>
+
+        <!-- Grid Grafik Tren & Perbandingan -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-space-lg">
+          <!-- Grafik Tren 24 Jam -->
+          <div class="lg:col-span-7 bg-surface-container-lowest rounded-xl p-space-md shadow-sm">
+            <h4 class="font-headline-md text-primary font-bold text-base mb-3">Tren Kualitas Udara 24 Jam Terakhir</h4>
+            <div class="h-72 w-full">
+              <canvas id="analytics-trend-chart"></canvas>
+            </div>
+          </div>
+
+          <!-- Grafik Perbandingan Antar Titik -->
+          <div class="lg:col-span-5 bg-surface-container-lowest rounded-xl p-space-md shadow-sm">
+            <h4 class="font-headline-md text-primary font-bold text-base mb-3">Perbandingan ISPU Antar Stasiun</h4>
+            <div class="h-72 w-full">
+              <canvas id="analytics-comparison-chart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tabel Deteksi Hotspot Sesuai PRD Section 6.5 -->
+        <div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+            <div>
+              <h4 class="font-headline-md text-primary font-bold text-base">Hasil Deteksi Pollution Hotspot (Jendela W = 24 Jam)</h4>
+              <p class="font-body-sm text-on-surface-variant">Hotspot ditentukan berdasarkan konsistensi dalam jendela 24 jam bila frekuensi bacaan ≥ Tidak Sehat mencapai ≥ 30% atau rata-rata PM2.5 melewati ambang batas.</p>
+            </div>
+            <span class="px-2.5 py-1 rounded-lg bg-surface-container-low text-primary text-xs font-bold border border-surface-container shrink-0">
+              Metode: PRD Rule Engine (W=24h, P=30%)
+            </span>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-surface-container-low text-primary font-label-bold text-xs uppercase tracking-wider border-b border-surface-container">
+                  <th class="py-3 px-4">Titik Pemantauan</th>
+                  <th class="py-3 px-4 text-center">Rata-rata PM2.5</th>
+                  <th class="py-3 px-4 text-center">% Bacaan ≥ Tidak Sehat</th>
+                  <th class="py-3 px-4 text-center">Jam Puncak (Peak)</th>
+                  <th class="py-3 px-4 text-center">Status Hotspot</th>
+                </tr>
+              </thead>
+              <tbody id="hotspot-table-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= VIEW: PERINGATAN (ALERTS) ================= -->
+      <section id="view-peringatan" class="hidden flex flex-col gap-space-lg">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div>
+            <h2 class="font-headline-xl text-headline-xl text-primary font-bold">Peringatan Dini Kualitas Udara</h2>
+            <p class="font-body-md text-on-surface-variant">Pusat log peringatan otomatis saat konsentrasi pencemar melewati ambang batas baku mutu lingkungan</p>
+          </div>
+        </div>
+
+        <!-- Alerts List Container -->
+        <div id="alerts-list-container" class="flex flex-col gap-space-sm"></div>
+      </section>
+
+      <!-- ================= VIEW: REKOMENDASI KESEHATAN ================= -->
+      <section id="view-rekomendasi" class="hidden flex flex-col gap-space-lg">
+        <div>
+          <h2 class="font-headline-xl text-headline-xl text-primary font-bold">Panduan Rekomendasi Kesehatan Warga</h2>
+          <p class="font-body-md text-on-surface-variant">Acuan langkah perlindungan diri berdasarkan kategori ISPU resmi Kementerian Lingkungan Hidup dan Kehutanan</p>
+        </div>
+
+        <!-- Matriks 4 Kategori Rekomendasi -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-space-md">
+          
+          <!-- Kategori Baik -->
+          <div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm border-l-4 border-tertiary">
+            <div class="flex items-center justify-between mb-2">
+              <span class="px-2.5 py-0.5 rounded-full font-label-sm font-bold bg-tertiary-fixed text-on-tertiary-fixed">
+                ISPU 0 - 50 • Baik
+              </span>
+              <span class="material-symbols-outlined text-tertiary text-[24px]">eco</span>
+            </div>
+            <h4 class="font-headline-md text-primary font-bold mb-1">Kondisi Udara Sangat Sehat</h4>
+            <p class="font-body-sm text-on-surface-variant mb-3">Tidak memberikan dampak buruk bagi kesehatan manusia, hewan, maupun vegetasi lingkungan.</p>
+            <div class="space-y-1.5 text-xs text-on-surface">
+              <div class="flex items-start gap-2"><strong>Aktivitas Luar:</strong> Sangat disarankan untuk olahraga dan rekreasi luar ruang.</div>
+              <div class="flex items-start gap-2"><strong>Ventilasi:</strong> Buka jendela lebar-lebar untuk pergantian udara segar di rumah.</div>
+              <div class="flex items-start gap-2"><strong>Masker:</strong> Tidak diperlukan bagi warga sehat.</div>
+            </div>
+          </div>
+
+          <!-- Kategori Sedang -->
+          <div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm border-l-4 border-secondary">
+            <div class="flex items-center justify-between mb-2">
+              <span class="px-2.5 py-0.5 rounded-full font-label-sm font-bold bg-secondary-fixed text-on-secondary-fixed">
+                ISPU 51 - 100 • Sedang
+              </span>
+              <span class="material-symbols-outlined text-secondary text-[24px]">cloud</span>
+            </div>
+            <h4 class="font-headline-md text-primary font-bold mb-1">Dapat Diterima Masyarakat</h4>
+            <p class="font-body-sm text-on-surface-variant mb-3">Tidak berpengaruh pada kesehatan manusia umum, namun kelompok yang sangat peka disarankan waspada.</p>
+            <div class="space-y-1.5 text-xs text-on-surface">
+              <div class="flex items-start gap-2"><strong>Aktivitas Luar:</strong> Masyarakat umum dapat beraktivitas normal.</div>
+              <div class="flex items-start gap-2"><strong>Kelompok Sensitif:</strong> Penderita asma disarankan membatasi aktivitas fisik terlalu lama.</div>
+              <div class="flex items-start gap-2"><strong>Ventilasi:</strong> Buka ventilasi di luar waktu jam padat lalu lintas.</div>
+            </div>
+          </div>
+
+          <!-- Kategori Tidak Sehat -->
+          <div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm border-l-4 border-error">
+            <div class="flex items-center justify-between mb-2">
+              <span class="px-2.5 py-0.5 rounded-full font-label-sm font-bold bg-error-container text-on-error-container">
+                ISPU 101 - 200 • Tidak Sehat
+              </span>
+              <span class="material-symbols-outlined text-error text-[24px]">crisis_alert</span>
+            </div>
+            <h4 class="font-headline-md text-primary font-bold mb-1">Kelompok Sensitif Terdampak</h4>
+            <p class="font-body-sm text-on-surface-variant mb-3">Dapat menimbulkan penurunan kenyamanan dan mengganggu sistem pernapasan pada kelompok rentan.</p>
+            <div class="space-y-1.5 text-xs text-on-surface">
+              <div class="flex items-start gap-2"><strong>Masker:</strong> Disarankan menggunakan masker medis standar saat bepergian.</div>
+              <div class="flex items-start gap-2"><strong>Aktivitas Luar:</strong> Kurangi olahraga berat di luar ruangan.</div>
+              <div class="flex items-start gap-2"><strong>Ventilasi:</strong> Tutup jendela, gunakan pendingin udara atau pembersih udara berfilter.</div>
+            </div>
+          </div>
+
+          <!-- Kategori Sangat Tidak Sehat / Berbahaya -->
+          <div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm border-l-4 border-outline">
+            <div class="flex items-center justify-between mb-2">
+              <span class="px-2.5 py-0.5 rounded-full font-label-sm font-bold bg-surface-container-high text-on-surface-variant">
+                ISPU &gt; 200 • Sangat Tidak Sehat / Berbahaya
+              </span>
+              <span class="material-symbols-outlined text-primary text-[24px]">health_and_safety</span>
+            </div>
+            <h4 class="font-headline-md text-primary font-bold mb-1">Risiko Kesehatan Serius</h4>
+            <p class="font-body-sm text-on-surface-variant mb-3">Tingkat kualitas udara berbahaya dan dapat memicu iritasi saluran pernapasan parah pada seluruh populasi.</p>
+            <div class="space-y-1.5 text-xs text-on-surface">
+              <div class="flex items-start gap-2"><strong>Masker:</strong> Wajib mengenakan masker respirator tipe N95 / KN95.</div>
+              <div class="flex items-start gap-2"><strong>Aktivitas Luar:</strong> Hindari semua kegiatan di luar ruangan yang tidak mendesak.</div>
+              <div class="flex items-start gap-2"><strong>Kesiagaan:</strong> Segera konsultasi ke fasilitas kesehatan bila mengalami sesak napas.</div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ================= VIEW: TENTANG SISTEM ================= -->
+      <section id="view-tentang" class="hidden flex flex-col gap-space-lg">
+        <div>
+          <h2 class="font-headline-xl text-headline-xl text-primary font-bold">Tentang AirSense City</h2>
+          <p class="font-body-md text-on-surface-variant">Sistem Pemantauan Kualitas Udara dan Deteksi Titik Panas Pencemaran Berbasis IoT Perkotaan</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-space-md items-start">
+          
+          <div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col gap-space-sm">
+            <h4 class="font-headline-md text-primary font-bold">Latar Belakang & Tujuan</h4>
+            <p class="font-body-md text-on-surface-variant text-xs leading-relaxed">
+              AirSense City dirancang untuk menjawab tantangan pemantauan lingkungan perkotaan di Kota Bandar Lampung. Melalui integrasi sensor IoT telemetri mikrokontroler (PMS7003 untuk partikulat PM2.5/PM10 dan sensor gas MQ136), sistem menyajikan informasi berkala yang dapat diakses langsung oleh masyarakat umum maupun dinas teknis pemerintah (Dinas Lingkungan Hidup).
+            </p>
+            <p class="font-body-md text-on-surface-variant text-xs leading-relaxed">
+              Siklus kerja sistem mengikuti prinsip <strong>Monitor → Analyze → Identify → Recommend</strong>: tidak sekadar menampilkan deretan angka, namun mendeteksi hotspot konsisten dan memberikan rekomendasi aksi praktis bagi warga.
+            </p>
+
+            <div class="bg-surface-container-low rounded-lg p-space-sm text-xs mt-2">
+              <span class="font-label-bold text-primary block mb-1">Standar Perhitungan ISPU</span>
+              <p class="text-on-surface-variant">
+                Mengacu pada <strong>Permen LHK No. 14 Tahun 2020</strong> dan <strong>SNI 19-4102-1996</strong> dengan interpolasi linear sub-indeks terhadap konsentrasi polutan terukur.
+              </p>
+            </div>
+          </div>
+
+          <div class="bg-primary-container text-on-primary rounded-xl p-space-lg shadow-sm flex flex-col justify-between">
+            <div>
+              <div class="flex items-center gap-3 mb-4">
+                <img src="assets/1794305676149_image.png" class="w-12 h-12 object-contain bg-white p-1 rounded-lg shadow-sm" alt="Logo Pemerintah Kota Bandar Lampung"/>
+                <img src="assets/IMG_5280.png" class="w-12 h-12 object-contain bg-white p-1 rounded-lg shadow-sm" alt="Logo Universitas Teknokrat Indonesia"/>
+                <div>
+                  <h4 class="font-headline-md text-white font-bold text-base">Inisiatif Kolaboratif</h4>
+                  <span class="text-xs text-on-primary-container">Smart City - Environmental Management</span>
+                </div>
+              </div>
+
+              <p class="font-body-sm text-on-primary-container mb-4 text-xs leading-relaxed">
+                Proyek ini merupakan kolaborasi strategis antara <strong>Pemerintah Kota Bandar Lampung</strong> dan <strong>Universitas Teknokrat Indonesia (UTI)</strong> dalam mewujudkan tata kelola kota cerdas berkelanjutan yang berbasis sains dan teknologi.
+              </p>
+
+              <div class="bg-white/10 p-3 rounded-lg text-xs space-y-1 mb-4">
+                <div><span class="text-on-primary-container">Pengembang Utama:</span> <strong class="text-white">Nayla Dela Azzahra</strong></div>
+                <div><span class="text-on-primary-container">Dosen Pembimbing:</span> <strong class="text-white">Dr. Erliyan Redy Susanto, M.Kom</strong></div>
+                <div><span class="text-on-primary-container">Fakultas:</span> <span class="text-white">Teknik dan Ilmu Komputer, Universitas Teknokrat Indonesia</span></div>
+              </div>
+            </div>
+
+            <div class="border-t border-white/20 pt-3 text-[11px] text-on-primary-container text-center">
+              Copyright©2026 by Nayla Dela Azzahra dan Dr. Erliyan Redy Susanto, M.Kom
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ================= VIEW: KONTROL SIMULASI IOT (ADMIN/DEMO) ================= -->
+      <section id="view-simulasi" class="hidden flex flex-col gap-space-lg">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-space-sm">
+          <div>
+            <h2 class="font-headline-xl text-headline-xl text-primary font-bold">Simulator Telemetri Sensor Virtual IoT</h2>
+            <p class="font-body-md text-on-surface-variant">Uji coba respons sistem end-to-end, simulasi skenario emisi polusi, dan verifikasi alert otomatis (PRD FR-SIM)</p>
+          </div>
+          <button onclick="window.airSenseStore.toggleSimulation(); this.textContent = window.airSenseStore.isSimulating ? 'Jeda Simulator' : 'Mulai Simulator';" 
+                  class="px-space-md py-space-xs rounded-lg bg-primary-container text-on-primary font-label-bold text-xs hover:bg-primary shadow-sm">
+            Jeda Simulator
+          </button>
+        </div>
+
+        <!-- Tombol Cepat Skenario -->
+        <div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm">
+          <span class="font-label-bold text-primary text-xs uppercase tracking-wider block mb-2">Pilih Skenario Cuaca / Emisi:</span>
+          <div class="flex flex-wrap gap-2 text-xs font-label-bold">
+            <button data-scenario="normal" class="px-space-sm py-2 rounded-lg bg-primary-container text-on-primary shadow-sm">
+              1. Normal (Kondisi Terkendali)
+            </button>
+            <button data-scenario="rush_hour" class="px-space-sm py-2 rounded-lg bg-surface-container-low text-on-surface hover:bg-surface-container-high">
+              2. Jam Sibuk (Tanjung Karang & Rajabasa Meningkat)
+            </button>
+            <button data-scenario="industrial_peak" class="px-space-sm py-2 rounded-lg bg-surface-container-low text-on-surface hover:bg-surface-container-high">
+              3. Polusi Industri Panjang (Trigger Hotspot & Alert)
+            </button>
+            <button data-scenario="rain_clearing" class="px-space-sm py-2 rounded-lg bg-surface-container-low text-on-surface hover:bg-surface-container-high">
+              4. Hujan Lebat (Penurunan Polusi Drastis)
+            </button>
+            <button data-scenario="inversion" class="px-space-sm py-2 rounded-lg bg-surface-container-low text-on-surface hover:bg-surface-container-high">
+              5. Inversi Suhu Ekstrem (Kondisi Sangat Buruk)
+            </button>
+          </div>
+        </div>
+
+        <!-- Slider Manual per Stasiun -->
+        <div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm">
+          <h4 class="font-headline-md text-primary font-bold text-base mb-1">Kontrol Nilai Konsentrasi Manual</h4>
+          <p class="font-body-sm text-on-surface-variant text-xs mb-4">Ubah konsentrasi PM2.5 dan PM10 secara langsung untuk melihat kalkulasi ISPU seketika pada seluruh layar aplikasi:</p>
+          <div id="sim-station-sliders"></div>
+        </div>
+      </section>
+
+      <!-- ================= VIEW: PANEL ADMINISTRASI (FR-ADM) ================= -->
+      <section id="view-admin" class="hidden flex flex-col gap-space-lg">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-space-sm">
+          <div>
+            <h2 class="font-headline-xl text-headline-xl text-primary font-bold">Panel Administrasi & Tata Kelola DLH</h2>
+            <p class="font-body-md text-on-surface-variant">Manajemen data master lokasi, sensor telemetri, ambang batas hotspot, dan log audit operasional (PRD FR-ADM)</p>
+          </div>
+          <span class="px-3 py-1 rounded-full text-xs font-bold bg-error-container text-on-error-container flex items-center gap-1.5 self-start sm:self-auto">
+            <span class="material-symbols-outlined text-[16px]">security</span> Hak Akses: Administrator DLH
+          </span>
+        </div>
+
+        <!-- 1. Manajemen Lokasi & Sensor Telemetri (FR-ADM-02 & FR-ADM-03) -->
+        <div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+            <div>
+              <h4 class="font-headline-md text-primary font-bold text-base flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-[20px]">location_on</span> Master Lokasi & Sensor Telemetri
+              </h4>
+              <p class="font-body-sm text-on-surface-variant text-xs">Kelola status aktif/nonaktif dan interval transmisi data sensor IoT perkotaan</p>
+            </div>
+            <button onclick="addNewLocationModal()" class="px-3 py-1.5 rounded-lg bg-primary-container text-white font-bold text-xs hover:bg-primary flex items-center gap-1">
+              <span class="material-symbols-outlined text-[16px]">add</span> Tambah Titik Pantau
+            </button>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr class="bg-surface-container-low text-primary font-label-bold uppercase border-b border-surface-container">
+                  <th class="py-2.5 px-3">Kode</th>
+                  <th class="py-2.5 px-3">Nama Stasiun & Alamat</th>
+                  <th class="py-2.5 px-3 text-center">Sensor IoT</th>
+                  <th class="py-2.5 px-3 text-center">Interval Transmisi</th>
+                  <th class="py-2.5 px-3 text-center">Status</th>
+                  <th class="py-2.5 px-3 text-center">Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="admin-locations-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 2. Grid Dua Kolom: Manajemen Ambang Batas (FR-ADM-04) & Log Audit (FR-ADM-07) -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-space-lg">
+          
+          <!-- Kolom Kiri: Konfigurasi Ambang Batas Hotspot & Alert -->
+          <div class="lg:col-span-6 bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex flex-col justify-between">
+            <div>
+              <h4 class="font-headline-md text-primary font-bold text-base mb-1 flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-[20px]">tune</span> Parameter & Ambang Batas Hotspot
+              </h4>
+              <p class="font-body-sm text-on-surface-variant text-xs mb-4">Pengaturan jendela waktu konsistensi dan batas peringatan otomatis (PRD FR-HOT-02)</p>
+
+              <div class="space-y-3 text-xs">
+                <div class="bg-surface-container-low p-3 rounded-lg flex items-center justify-between">
+                  <div>
+                    <strong class="text-primary block">Jendela Waktu Hotspot (W)</strong>
+                    <span class="text-on-surface-variant text-[11px]">Durasi evaluasi konsistensi pencemaran</span>
+                  </div>
+                  <div class="flex items-center gap-1">
+                    <input type="number" id="cfg-window-hours" value="24" min="1" max="72" class="w-16 px-2 py-1 rounded border border-gray-300 font-bold text-center"/>
+                    <span class="text-gray-500 font-semibold">Jam</span>
+                  </div>
+                </div>
+
+                <div class="bg-surface-container-low p-3 rounded-lg flex items-center justify-between">
+                  <div>
+                    <strong class="text-primary block">Ambang Persentase Tidak Sehat (P%)</strong>
+                    <span class="text-on-surface-variant text-[11px]">Batas minimum frekuensi pembacaan ≥ Tidak Sehat</span>
+                  </div>
+                  <div class="flex items-center gap-1">
+                    <input type="number" id="cfg-threshold-pct" value="30" min="5" max="90" class="w-16 px-2 py-1 rounded border border-gray-300 font-bold text-center"/>
+                    <span class="text-gray-500 font-semibold">%</span>
+                  </div>
+                </div>
+
+                <div class="bg-surface-container-low p-3 rounded-lg flex items-center justify-between">
+                  <div>
+                    <strong class="text-primary block">Baku Mutu PM2.5 Lingkungan (A)</strong>
+                    <span class="text-on-surface-variant text-[11px]">Batas aman rata-rata konsentrasi 24 jam</span>
+                  </div>
+                  <div class="flex items-center gap-1">
+                    <input type="number" id="cfg-threshold-pm25" value="55.0" step="0.5" class="w-16 px-2 py-1 rounded border border-gray-300 font-bold text-center"/>
+                    <span class="text-gray-500 font-semibold">µg/m³</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="pt-3 mt-4 border-t flex justify-end">
+              <button onclick="saveThresholdConfig()" class="px-4 py-1.5 rounded-lg bg-primary-container text-white font-bold text-xs hover:bg-primary shadow-sm flex items-center gap-1">
+                <span class="material-symbols-outlined text-[16px]">save</span> Simpan Perubahan Parameter
+              </button>
+            </div>
+          </div>
+
+          <!-- Kolom Kanan: Log Audit Perubahan Sistem (FR-ADM-07) -->
+          <div class="lg:col-span-6 bg-surface-container-lowest rounded-xl p-space-md shadow-sm">
+            <h4 class="font-headline-md text-primary font-bold text-base mb-1 flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-[20px]">history</span> Log Audit Konfigurasi Sistem
+            </h4>
+            <p class="font-body-sm text-on-surface-variant text-xs mb-3">Rekam jejak perubahan parameter, status sensor, dan pemicuan skenario</p>
+
+            <div class="overflow-y-auto max-h-64 space-y-2 pr-1" id="admin-audit-logs-container"></div>
+          </div>
+
+        </div>
+
+        <!-- 3. Manajemen Pengguna & Hak Akses (FR-AUTH & FR-ADM-01) -->
+        <div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm">
+          <h4 class="font-headline-md text-primary font-bold text-base mb-1 flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-[20px]">group</span> Manajemen Pengguna & Otorisasi Peran
+          </h4>
+          <p class="font-body-sm text-on-surface-variant text-xs mb-3">Daftar akun berwenang pada sistem pemantauan AirSense City</p>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr class="bg-surface-container-low text-primary font-label-bold uppercase border-b border-surface-container">
+                  <th class="py-2.5 px-3">Nama Pengguna</th>
+                  <th class="py-2.5 px-3">Alamat Email</th>
+                  <th class="py-2.5 px-3 text-center">Peran Sistem</th>
+                  <th class="py-2.5 px-3 text-center">Status Otentikasi</th>
+                  <th class="py-2.5 px-3 text-center">Waktu Dibuat</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="border-b">
+                  <td class="py-2 px-3 font-bold text-primary">Dr. Erliyan Redy Susanto, M.Kom</td>
+                  <td class="py-2 px-3">erliyan.redy@teknokrat.ac.id</td>
+                  <td class="py-2 px-3 text-center"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-error-container text-on-error-container">Super Admin</span></td>
+                  <td class="py-2 px-3 text-center"><span class="text-green-700 font-bold">Argon2id Hash OK</span></td>
+                  <td class="py-2 px-3 text-center text-gray-500">Januari 2026</td>
+                </tr>
+                <tr class="border-b">
+                  <td class="py-2 px-3 font-bold text-primary">Nayla Dela Azzahra</td>
+                  <td class="py-2 px-3">nayla.dela@teknokrat.ac.id</td>
+                  <td class="py-2 px-3 text-center"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-error-container text-on-error-container">Lead Admin</span></td>
+                  <td class="py-2 px-3 text-center"><span class="text-green-700 font-bold">Argon2id Hash OK</span></td>
+                  <td class="py-2 px-3 text-center text-gray-500">Januari 2026</td>
+                </tr>
+                <tr class="border-b">
+                  <td class="py-2 px-3 font-bold text-primary">Dinas Lingkungan Hidup Kota BDL</td>
+                  <td class="py-2 px-3">dlh@bandarlampung.go.id</td>
+                  <td class="py-2 px-3 text-center"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-secondary-fixed text-on-secondary-fixed">Petugas DLH</span></td>
+                  <td class="py-2 px-3 text-center"><span class="text-green-700 font-bold">Argon2id Hash OK</span></td>
+                  <td class="py-2 px-3 text-center text-gray-500">Februari 2026</td>
+                </tr>
+                <tr class="border-b">
+                  <td class="py-2 px-3 font-bold text-primary">Warga Masyarakat Umum</td>
+                  <td class="py-2 px-3">publik@bandarlampung.go.id</td>
+                  <td class="py-2 px-3 text-center"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-surface-container-high text-on-surface-variant">Publik</span></td>
+                  <td class="py-2 px-3 text-center"><span class="text-blue-700 font-semibold">Akses Terbuka</span></td>
+                  <td class="py-2 px-3 text-center text-gray-500">Maret 2026</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </section>
+
+    </div>
+  </main>
+
+  <!-- ================= APP SHELL: FOOTER (Wajib BR-03 & BR-04) ================= -->
+  <footer class="w-full bg-surface-container-lowest py-space-lg shadow-[0_-1px_6px_rgba(0,0,0,0.03)] border-t border-surface-container mt-space-lg">
+    <div class="max-w-7xl mx-auto px-gutter-desktop flex flex-col items-center justify-center text-center gap-1.5">
+      <div class="flex items-center gap-2 mb-1">
+        <img src="assets/1794305676149_image.png" class="w-6 h-6 object-contain" alt="Logo Pemerintah Kota Bandar Lampung"/>
+        <img src="assets/IMG_5280.png" class="w-6 h-6 object-contain" alt="Logo Universitas Teknokrat Indonesia"/>
+        <span class="font-label-bold text-primary">AirSense City</span>
+      </div>
+      <!-- Teks Hak Cipta Wajib Persis BR-03 -->
+      <p class="font-body-sm text-on-surface font-semibold">
+        Copyright©2026 by Nayla Dela Azzahra dan Dr. Erliyan Redy Susanto, M.Kom
+      </p>
+      <!-- Baris Kolaborasi Wajib -->
+      <p class="font-label-sm text-on-surface-variant">
+        Kolaborasi Pemerintah Kota Bandar Lampung & Universitas Teknokrat Indonesia
+      </p>
+    </div>
+  </footer>
+
+  <!-- ================= MODAL: UNDUH LAPORAN HARIAN (PDF / CETAK) ================= -->
+  <div id="modal-report" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto p-6 shadow-2xl relative">
+      <div class="flex items-center justify-between pb-3 border-b mb-4">
+        <div class="flex items-center gap-2 text-primary font-bold">
+          <span class="material-symbols-outlined">description</span>
+          Pratinjau Dokumen Laporan Resmi (PDF)
+        </div>
+        <div class="flex items-center gap-2">
+          <button id="btn-print-report" class="px-4 py-1.5 rounded-lg bg-primary-container text-white font-bold text-xs hover:bg-primary flex items-center gap-1">
+            <span class="material-symbols-outlined text-[16px]">print</span> Cetak / Simpan PDF
+          </button>
+          <button id="btn-close-report" class="p-1.5 rounded-lg hover:bg-gray-100 text-gray-600">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Report Sheet Content -->
+      <div id="report-modal-content" class="bg-white p-4 print:p-0"></div>
+    </div>
+  </div>
+
+  <!-- ================= MODAL: LOGIN & SWITCH ROLE ================= -->
+  <div id="modal-login" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl relative">
+      <div class="flex items-center justify-between pb-2 border-b mb-4">
+        <div class="flex items-center gap-2 text-primary font-bold text-base">
+          <span class="material-symbols-outlined">badge</span>
+          Pilih Peran Akses Sistem
+        </div>
+        <button id="btn-close-login" class="p-1 rounded-lg hover:bg-gray-100 text-gray-500">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <p class="text-xs text-on-surface-variant mb-4">
+        AirSense City mendukung otentikasi multi-peran (FR-AUTH). Untuk demonstrasi prototipe, Anda dapat langsung beralih peran di bawah ini:
+      </p>
+
+      <div class="flex flex-col gap-2.5">
+        <button onclick="window.airSenseStore.setRole('public'); document.getElementById('modal-login').classList.add('hidden');" 
+                class="w-full text-left p-3 rounded-xl border border-surface-container hover:bg-surface-container-low transition-colors flex items-center justify-between">
+          <div>
+            <div class="font-bold text-primary text-sm">Masyarakat Umum (Publik)</div>
+            <div class="text-[11px] text-gray-500">Akses dashboard, peta, analitik, dan rekomendasi kesehatan</div>
+          </div>
+          <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-surface-container-high text-on-surface-variant">Default</span>
+        </button>
+
+        <button onclick="window.airSenseStore.setRole('officer'); document.getElementById('modal-login').classList.add('hidden');" 
+                class="w-full text-left p-3 rounded-xl border border-surface-container hover:bg-surface-container-low transition-colors flex items-center justify-between">
+          <div>
+            <div class="font-bold text-secondary text-sm">Petugas Lapangan DLH</div>
+            <div class="text-[11px] text-gray-500">Akses pemantauan hotspot, investigasi sensor, dan riwayat alert</div>
+          </div>
+          <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-secondary-fixed text-on-secondary-fixed">Petugas</span>
+        </button>
+
+        <button onclick="window.airSenseStore.setRole('admin'); document.getElementById('modal-login').classList.add('hidden'); navigateTo('simulasi');" 
+                class="w-full text-left p-3 rounded-xl border border-surface-container hover:bg-surface-container-low transition-colors flex items-center justify-between">
+          <div>
+            <div class="font-bold text-error text-sm">Administrator Sistem</div>
+            <div class="text-[11px] text-gray-500">Akses penuh kontrol sensor IoT, skenario emisi, dan manajemen ambang</div>
+          </div>
+          <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-error-container text-on-error-container">Admin</span>
+        </button>
+      </div>
+
+      <div class="mt-4 pt-3 border-t text-center text-[10px] text-gray-500">
+        Copyright©2026 by Nayla Dela Azzahra dan Dr. Erliyan Redy Susanto, M.Kom
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= MODAL: DETAIL STASIUN (FR-PUB-04) ================= -->
+  <div id="modal-station-detail" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6 shadow-2xl relative">
+      <div class="flex items-center justify-between pb-3 border-b mb-4">
+        <div class="flex items-center gap-2 text-primary font-bold text-base">
+          <span class="material-symbols-outlined text-[22px]">sensors</span>
+          <span id="detail-modal-title">Detail Stasiun Telemetri</span>
+        </div>
+        <button id="btn-close-detail" class="p-1 rounded-lg hover:bg-gray-100 text-gray-500">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <div id="detail-modal-body"></div>
+    </div>
+  </div>
+
+  <!-- Application Logic Scripts -->
+  <script src="js/ispu.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/map.js"></script>
+  <script src="js/charts.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
+

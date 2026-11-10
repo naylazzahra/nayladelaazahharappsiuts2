@@ -1,0 +1,49 @@
+# =====================================================================
+# AirSense City - Docker Compose Configuration
+# Smart City Urban Air Quality Monitoring & Pollution Hotspot Detection
+# Copyright©2026 by Nayla Dela Azzahra dan Dr. Erliyan Redy Susanto, M.Kom
+# Kolaborasi: Pemerintah Kota Bandar Lampung & Universitas Teknokrat Indonesia
+# =====================================================================
+
+services:
+  # 1. Database PostgreSQL 16 dengan Ekstensi PostGIS
+  db:
+    image: postgis/postgis:16-3.4
+    container_name: airsense_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: airsense_city
+      POSTGRES_USER: airsense_user
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-airsense_secure_dev_pwd_2026}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/01-init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U airsense_user -d airsense_city"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # 2. Web Application & Telemetry Engine
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: airsense_app
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - DATABASE_URL=postgres://airsense_user:${POSTGRES_PASSWORD:-airsense_secure_dev_pwd_2026}@db:5432/airsense_city
+      - NODE_ENV=production
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  pgdata:
+    driver: local
+

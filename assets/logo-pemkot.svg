@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" width="100%" height="100%">
+  <!-- Background Shield -->
+  <defs>
+    <linearGradient id="shieldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0b5394"/>
+      <stop offset="100%" stop-color="#042a4d"/>
+    </linearGradient>
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffe57f"/>
+      <stop offset="50%" stop-color="#ffc107"/>
+      <stop offset="100%" stop-color="#ff8f00"/>
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="2" stdDeviation="2" flood-opacity="0.25"/>
+    </filter>
+  </defs>
+
+  <!-- Outer Pentagon Shield -->
+  <polygon points="80,10 148,40 135,118 80,152 25,118 12,40" fill="url(#shieldGrad)" stroke="#ffc107" stroke-width="4" filter="url(#shadow)"/>
+  
+  <!-- Inner Rim -->
+  <polygon points="80,18 138,44 126,112 80,142 34,112 22,44" fill="#003441" stroke="#ffffff" stroke-width="1.5" opacity="0.9"/>
+
+  <!-- Siger (Mahkota Adat Lampung) at Top -->
+  <g fill="url(#goldGrad)" stroke="#b78103" stroke-width="0.8">
+    <!-- Center Peak -->
+    <path d="M80,32 L87,55 L73,55 Z"/>
+    <circle cx="80" cy="30" r="3" fill="#ffe082"/>
+    <!-- Left Peaks -->
+    <path d="M68,38 L74,56 L61,56 Z"/>
+    <circle cx="68" cy="36" r="2.5" fill="#ffe082"/>
+    <path d="M56,45 L62,58 L50,58 Z"/>
+    <circle cx="56" cy="43" r="2" fill="#ffe082"/>
+    <path d="M45,52 L51,60 L40,60 Z"/>
+    <!-- Right Peaks -->
+    <path d="M92,38 L99,56 L86,56 Z"/>
+    <circle cx="92" cy="36" r="2.5" fill="#ffe082"/>
+    <path d="M104,45 L110,58 L98,58 Z"/>
+    <circle cx="104" cy="43" r="2" fill="#ffe082"/>
+    <path d="M115,52 L120,60 L109,60 Z"/>
+    <!-- Siger Base Arc -->
+    <path d="M40,60 Q80,68 120,60 Q80,63 40,60 Z" fill="#ffb300"/>
+  </g>
+
+  <!-- Sea Waves / Teluk Lampung -->
+  <path d="M30,95 Q55,90 80,95 T130,95 L126,110 Q80,140 80,140 Q34,110 34,110 Z" fill="#0277bd" opacity="0.6"/>
+  <path d="M36,102 Q58,98 80,102 T124,102 L120,112 Q80,138 80,138 Q40,112 40,112 Z" fill="#01579b" opacity="0.8"/>
+
+  <!-- Perahu Radin Inten (Traditional Boat) -->
+  <path d="M50,92 C65,92 70,88 80,88 C90,88 95,92 110,92 C105,98 90,101 80,101 C70,101 55,98 50,92 Z" fill="url(#goldGrad)" stroke="#c67d00" stroke-width="1"/>
+  <!-- Sail / Mast -->
+  <path d="M78,72 L78,88 L88,88 Z" fill="#ffffff" stroke="#003441" stroke-width="0.8"/>
+  <line x1="78" y1="70" x2="78" y2="88" stroke="#37474f" stroke-width="1.5"/>
+
+  <!-- Ribbon "RAGOM GAWI" at Base -->
+  <g id="ribbon">
+    <path d="M32,122 L45,116 L115,116 L128,122 L120,130 L108,125 L52,125 L40,130 Z" fill="#ffffff" stroke="#ffb300" stroke-width="1.5"/>
+    <text x="80" y="123" text-anchor="middle" font-family="'Inter', sans-serif" font-size="7" font-weight="900" fill="#003441" letter-spacing="1">RAGOM GAWI</text>
+  </g>
+
+  <!-- Text Header -->
+  <text x="80" y="70" text-anchor="middle" font-family="'Inter', sans-serif" font-size="6.5" font-weight="800" fill="#ffffff" letter-spacing="0.5">BANDAR LAMPUNG</text>
+</svg>
+

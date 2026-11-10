@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" width="100%" height="100%">
+  <defs>
+    <linearGradient id="utiRed" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#b71c1c"/>
+      <stop offset="100%" stop-color="#7f0000"/>
+    </linearGradient>
+    <linearGradient id="utiGold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fff176"/>
+      <stop offset="50%" stop-color="#fbc02d"/>
+      <stop offset="100%" stop-color="#f57f17"/>
+    </linearGradient>
+    <filter id="utiShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="2" stdDeviation="2" flood-opacity="0.25"/>
+    </filter>
+  </defs>
+
+  <!-- Pentagon Shield Background -->
+  <polygon points="80,8 150,38 136,120 80,154 24,120 10,38" fill="url(#utiRed)" stroke="url(#utiGold)" stroke-width="4.5" filter="url(#utiShadow)"/>
+  
+  <!-- Inner Golden Line -->
+  <polygon points="80,16 142,42 128,114 80,144 32,114 18,42" fill="none" stroke="#ffffff" stroke-width="1.2" opacity="0.8"/>
+
+  <!-- Wings of Glory (Left & Right) -->
+  <g fill="url(#utiGold)" stroke="#d79b00" stroke-width="0.7">
+    <!-- Left Wing -->
+    <path d="M72,60 C60,50 42,52 32,68 C42,66 54,72 68,78 Z"/>
+    <path d="M70,72 C58,66 44,70 36,84 C46,80 56,84 66,90 Z"/>
+    <path d="M68,84 C58,82 48,88 42,98 C52,94 60,96 66,99 Z"/>
+
+    <!-- Right Wing -->
+    <path d="M88,60 C100,50 118,52 128,68 C118,66 106,72 92,78 Z"/>
+    <path d="M90,72 C102,66 116,70 124,84 C114,80 104,84 94,90 Z"/>
+    <path d="M92,84 C102,82 112,88 118,98 C108,94 100,96 94,99 Z"/>
+  </g>
+
+  <!-- Central Torch (Obor Ilmu & Semangat Sang Juara) -->
+  <!-- Torch Handle -->
+  <polygon points="76,82 84,82 82,112 78,112" fill="url(#utiGold)" stroke="#c68400" stroke-width="0.8"/>
+  <ellipse cx="80" cy="82" rx="6" ry="2.5" fill="#ffd54f"/>
+  <rect x="77" y="94" width="6" height="3" fill="#ffffff" opacity="0.8"/>
+
+  <!-- Flame (Api Obor) -->
+  <path d="M80,48 C75,56 70,62 72,70 C74,78 80,82 80,82 C80,82 86,78 88,70 C90,62 85,56 80,48 Z" fill="#ff6f00"/>
+  <path d="M80,56 C77,62 74,66 76,72 C77,77 80,80 80,80 C80,80 83,77 84,72 C86,66 83,62 80,56 Z" fill="#ffeb3b"/>
+
+  <!-- Open Book at base of torch -->
+  <g fill="#ffffff" stroke="#c68400" stroke-width="0.9">
+    <path d="M80,105 C70,100 58,102 52,106 L52,115 C60,111 70,110 80,114 Z"/>
+    <path d="M80,105 C90,100 102,102 108,106 L108,115 C100,111 90,110 80,114 Z"/>
+  </g>
+
+  <!-- Ribbon & Text "UNIVERSITAS TEKNOKRAT INDONESIA" -->
+  <path d="M26,124 L42,118 L118,118 L134,124 L126,134 L112,128 L48,128 L34,134 Z" fill="#ffffff" stroke="#fbc02d" stroke-width="1.5"/>
+  <text x="80" y="125" text-anchor="middle" font-family="'Inter', sans-serif" font-size="5.8" font-weight="900" fill="#7f0000" letter-spacing="0.4">TEKNOKRAT</text>
+
+  <!-- Motto Sang Juara -->
+  <text x="80" y="32" text-anchor="middle" font-family="'Inter', sans-serif" font-size="6.5" font-weight="800" fill="#ffffff" letter-spacing="1">ASEAN'S BEST</text>
+  <text x="80" y="142" text-anchor="middle" font-family="'Inter', sans-serif" font-size="5" font-weight="700" fill="#ffeb3b" letter-spacing="0.5">SANG JUARA</text>
+</svg>
+

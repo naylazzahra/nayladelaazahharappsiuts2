@@ -1,0 +1,23 @@
+{
+  "name": "airsense-city",
+  "version": "1.0.0",
+  "description": "Sistem Monitoring Kualitas Udara Perkotaan Bandar Lampung (Kolaborasi Pemkot Bandar Lampung & Universitas Teknokrat Indonesia)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": [
+    "airsense",
+    "ispu",
+    "smart-city",
+    "iot",
+    "bandar-lampung",
+    "teknokrat"
+  ],
+  "author": "Nayla Dela Azzahra dan Dr. Erliyan Redy Susanto, M.Kom",
+  "license": "ISC",
+  "dependencies": {
+    "docx": "^9.15.3"
+  }
+}

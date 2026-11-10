@@ -1,0 +1,592 @@
+﻿Product Requirements Document (PRD)
+AirSense City
+Web-Based Urban Air Quality Monitoring and Pollution Hotspot Detection System
+Smart City – Environmental Management
+Versi dokumen
+1.0 (Draft untuk review)
+Status
+Divalidasi terhadap stack Rust + PostgreSQL
+Platform
+Web Application
+Sumber data
+Simulasi sensor IoT (Virtual IoT Sensor)
+Hak cipta
+Copyright©2026 by Nayla Dela Azzahra dan Dr. Erliyan Redy Susanto, M.Kom
+1. Ringkasan Eksekutif
+AirSense City adalah sistem informasi berbasis web untuk memantau, menganalisis, dan memetakan kualitas udara di beberapa titik pemantauan perkotaan. Data dihasilkan oleh sensor virtual (simulasi IoT), diolah menjadi indeks ISPU, ditampilkan pada dashboard dan peta interaktif, lalu dianalisis untuk mendeteksi pollution hotspot dan menghasilkan peringatan serta rekomendasi tindakan.
+Pembeda utama sistem: Monitor → Analyze → Identify → Recommend. Sistem tidak berhenti pada penayangan angka, tetapi membantu masyarakat dan petugas lingkungan menentukan tindakan dan prioritas penanganan.
+Posisi produk: Environmental Monitoring & Decision Support System dalam ekosistem Smart City.
+2. Latar Belakang dan Masalah
+Aktivitas perkotaan (transportasi, pembangunan, industri) meningkatkan potensi pencemaran udara. Masalah yang diangkat:
+Masyarakat sulit mengetahui kualitas udara di lingkungannya secara berkala dan berbasis lokasi.
+Informasi yang hanya berupa angka tidak menunjukkan pola perubahan maupun lokasi bermasalah.
+Belum ada peringatan otomatis saat kualitas udara memburuk.
+Pemerintah/petugas sulit memperoleh data dari banyak titik secara terintegrasi.
+Edukasi dampak polusi terhadap aktivitas harian masih terbatas.
+Core problem: belum tersedia sistem informasi kualitas udara yang mudah diakses, memantau secara berkala, dan memberi informasi serta tindakan berdasarkan kondisi tiap lokasi.
+3. Tujuan Produk dan Indikator Keberhasilan
+#
+Tujuan
+Indikator keberhasilan (target prototipe)
+G1
+Monitoring multi-lokasi hampir real-time
+Data terbaru tampil di dashboard ≤ 10 detik setelah dihasilkan simulator
+G2
+Visualisasi spasial
+Seluruh 5–10 titik tampil di peta dengan warna kategori ISPU yang benar
+G3
+Deteksi hotspot berbasis konsistensi
+Hotspot ditentukan dari data periode tertentu, bukan satu pembacaan
+G4
+Peringatan dan rekomendasi
+Alert tercatat otomatis ≤ 15 detik setelah ambang terlewati
+G5
+Pengujian tanpa perangkat fisik
+Admin dapat memicu skenario polusi dan melihat respons sistem end-to-end
+G6
+Perhitungan sesuai standar
+Hasil ISPU lolos uji terhadap tabel kasus uji berbasis formula resmi (100% cocok)
+Di luar cakupan (Non-Goals)
+Perangkat sensor fisik (ESP32, PMS5003, dll.).
+Aplikasi mobile native.
+Machine learning prediction (pengembangan lanjutan).
+Klaim bahwa data simulasi setara alat pantau referensi resmi.
+4. Pengguna dan Persona
+Peran
+Deskripsi
+Kebutuhan utama
+Masyarakat (publik, tanpa login)
+Warga yang ingin tahu kondisi udara sekitar
+Status udara, peta, grafik, rekomendasi sederhana
+Petugas Lingkungan / Pemerintah
+Pemantau kondisi dan hotspot
+Perbandingan wilayah, hotspot, riwayat alert, laporan
+Administrator
+Pengelola sistem
+Kelola lokasi, sensor virtual, ambang batas, simulasi, pengguna
+User stories utama
+Sebagai warga, saya ingin melihat status udara di lokasi tertentu beserta rekomendasi aktivitas agar dapat memutuskan beraktivitas di luar ruangan.
+Sebagai petugas, saya ingin melihat daftar wilayah dengan polusi berulang agar dapat memprioritaskan penanganan.
+Sebagai admin, saya ingin mengaktifkan skenario "polusi tinggi" pada sensor tertentu agar dapat mendemonstrasikan respons sistem.
+Sebagai petugas, saya ingin mengunduh laporan bulanan agar dapat didokumentasikan.
+5. Persyaratan Identitas Visual dan Footer (WAJIB)
+Bagian ini adalah persyaratan wajib dan menjadi kriteria penerimaan tersendiri.
+ID
+Persyaratan
+Prioritas
+BR-01
+Logo Universitas Teknokrat Indonesia tampil pada header di semua halaman (publik, admin, login). File logo menggunakan berkas yang telah disediakan (IMG_5280.png), disimpan sebagai aset statis.
+Wajib
+BR-02
+Logo Pemda tampil pada header di semua halaman, bersebelahan dengan logo Universitas Teknokrat Indonesia. Pemda yang dimaksud adalah Pemerintah Kota Bandar Lampung; logo yang digunakan adalah lambang Kota Bandar Lampung (berkas 1794305676149_image.png) yang telah disediakan, disimpan sebagai aset statis.
+Wajib
+BR-03
+Footer di setiap halaman memuat teks persis: Copyright©2026 by Nayla Dela Azzahra dan Dr. Erliyan Redy Susanto, M.Kom
+Wajib
+BR-04
+Footer yang sama dicantumkan pada halaman login, halaman error (404/500), dan footer dokumen laporan PDF.
+Wajib
+BR-05
+Kedua logo memiliki atribut alt text ("Logo Universitas Teknokrat Indonesia", "Logo Pemerintah Kota Bandar Lampung"), proporsi tidak boleh terdistorsi, dan tetap terlihat pada layar mobile (header responsif).
+Wajib
+BR-06
+Teks footer ditempatkan pada komponen layout tunggal (satu sumber) agar tidak ada halaman yang terlewat dan mudah diubah.
+Wajib
+BR-07
+Logo ditayangkan sebagai aset statis, tidak diambil dari tautan eksternal.
+Wajib
+Catatan: logo yang tersedia berlatar putih; pada header berwarna gelap sebaiknya digunakan latar putih/kartu putih di sekitar logo atau versi logo transparan.
+Aset logo yang sudah disediakan: (1) logo Universitas Teknokrat Indonesia (IMG_5280.png) dan (2) logo Pemerintah Kota Bandar Lampung (1794305676149_image.png). Keduanya ditempatkan pada folder aset statis dan ditayangkan dari server sendiri. Bila resolusi logo Pemda terlalu rendah untuk layar tajam atau PDF, gunakan versi vektor (SVG) atau resolusi lebih tinggi.
+6. Persyaratan Fungsional
+Prioritas: M = Must (MVP), S = Should, C = Could (lanjutan).
+6.1 Autentikasi dan Peran (FR-AUTH)
+ID
+Persyaratan
+Prioritas
+FR-AUTH-01
+Login dengan email dan password; password disimpan sebagai hash Argon2id.
+M
+FR-AUTH-02
+Tiga peran: admin, officer (petugas/pemerintah), dan publik (tanpa akun).
+M
+FR-AUTH-03
+Otorisasi berbasis peran pada setiap endpoint admin dan petugas.
+M
+FR-AUTH-04
+Sesi memakai token JWT berumur pendek dengan mekanisme refresh, atau cookie sesi HttpOnly.
+M
+FR-AUTH-05
+Pembatasan percobaan login (rate limiting).
+S
+6.2 Dashboard Publik (FR-PUB)
+ID
+Persyaratan
+Prioritas
+FR-PUB-01
+Ringkasan kondisi seluruh wilayah: jumlah titik per kategori, wilayah terbaik dan terburuk saat ini.
+M
+FR-PUB-02
+Kartu kondisi terkini per lokasi: PM2.5, PM10, suhu, kelembapan, nilai ISPU, kategori, dan waktu pembaruan terakhir.
+M
+FR-PUB-03
+Label jelas "Data simulasi" pada semua tampilan data.
+M
+FR-PUB-04
+Halaman detail lokasi dengan grafik riwayat dan rekomendasi.
+M
+FR-PUB-05
+Rekomendasi kesehatan berdasarkan kategori ISPU dan parameter dominan.
+M
+FR-PUB-06
+Halaman "Tentang Sistem" yang menjelaskan metode, batasan simulasi, dan standar yang dipakai.
+S
+6.3 Peta Kualitas Udara (FR-MAP)
+ID
+Persyaratan
+Prioritas
+FR-MAP-01
+Peta interaktif (Leaflet + OpenStreetMap) dengan penanda tiap sensor/lokasi.
+M
+FR-MAP-02
+Warna penanda mengikuti kategori ISPU resmi (lihat Bagian 8).
+M
+FR-MAP-03
+Klik penanda menampilkan ringkasan dan tautan ke detail lokasi.
+M
+FR-MAP-04
+Lapisan khusus hotspot (penanda atau ring berbeda).
+M
+FR-MAP-05
+Legenda warna dan kategori pada peta.
+M
+6.4 Monitoring dan Analitik (FR-MON)
+ID
+Persyaratan
+Prioritas
+FR-MON-01
+Pembaruan data hampir real-time (SSE sebagai utama, polling berkala sebagai cadangan).
+M
+FR-MON-02
+Riwayat data dengan filter lokasi dan rentang waktu (jam, hari, minggu, bulan).
+M
+FR-MON-03
+Grafik tren (Chart.js) per parameter dan per lokasi.
+M
+FR-MON-04
+Perbandingan antarwilayah dalam satu tampilan.
+M
+FR-MON-05
+Statistik: wilayah PM2.5 tertinggi, jam puncak pencemaran, frekuensi kategori Tidak Sehat.
+M
+FR-MON-06
+Agregasi per jam dan per hari untuk kueri riwayat panjang.
+S
+6.5 Deteksi Pollution Hotspot (FR-HOT)
+ID
+Persyaratan
+Prioritas
+FR-HOT-01
+Hotspot ditentukan berdasarkan konsistensi dalam jendela waktu, bukan satu pembacaan.
+M
+FR-HOT-02
+Aturan awal (dapat dikonfigurasi admin): dalam jendela W (default 24 jam), lokasi berstatus Hotspot bila persentase pembacaan dengan kategori ≥ Tidak Sehat mencapai P% (default 30%) atau rata-rata PM2.5 melewati ambang A; status Perlu dipantau bila di bawah P% tetapi di atas batas bawah B.
+M
+FR-HOT-03
+Tabel hasil: lokasi, rata-rata PM2.5, persentase pembacaan di atas ambang, jam puncak, status.
+M
+FR-HOT-04
+Perhitungan hotspot dijalankan terjadwal (mis. tiap 5 menit) dan hasilnya disimpan.
+M
+FR-HOT-05
+Pengelompokan spasial dengan DBSCAN memakai PostGIS (ST_ClusterDBSCAN) untuk menggabungkan sensor berdekatan menjadi satu zona hotspot.
+C
+6.6 Peringatan Dini dan Rekomendasi (FR-ALR)
+ID
+Persyaratan
+Prioritas
+FR-ALR-01
+Alert otomatis ketika kategori ISPU naik melewati ambang yang diatur admin.
+M
+FR-ALR-02
+Pencegahan alert berulang (deduplikasi/cooldown per lokasi dan level).
+M
+FR-ALR-03
+Riwayat peringatan dengan status (aktif, selesai) dan waktu.
+M
+FR-ALR-04
+Banner/notifikasi dalam aplikasi untuk alert aktif; alert dikirim ke klien melalui SSE.
+M
+FR-ALR-05
+Rekomendasi bergantung pada kategori dan parameter dominan, dikelola admin pada tabel rekomendasi.
+M
+FR-ALR-06
+Notifikasi email untuk pengguna yang berlangganan lokasi.
+C
+6.7 Simulasi IoT (FR-SIM)
+ID
+Persyaratan
+Prioritas
+FR-SIM-01
+Simulator berupa task asinkron di backend (Tokio) yang membuat pembacaan untuk setiap sensor virtual aktif pada interval yang dapat diatur.
+M
+FR-SIM-02
+Parameter MVP: PM2.5, PM10, suhu, kelembapan. CO dan NO2 opsional (S).
+M
+FR-SIM-03
+Skenario: normal, peningkatan kendaraan (jam sibuk), aktivitas industri, perubahan cuaca, penurunan pencemaran.
+M
+FR-SIM-04
+Pola harian (diurnal) dan noise acak dengan seed yang dapat diulang agar demonstrasi dan pengujian konsisten.
+M
+FR-SIM-05
+Admin dapat memilih sensor, mengaktifkan/menonaktifkan sensor, mengubah skenario, dan mengatur interval.
+M
+FR-SIM-06
+Simulator mengirim data melalui jalur yang sama dengan sensor nyata (endpoint ingest terautentikasi dengan API key sensor) agar arsitektur siap diganti perangkat sungguhan.
+S
+FR-SIM-07
+Hubungan cuaca-polutan tidak dimodelkan linear mutlak; ini skenario buatan dan didokumentasikan sebagai asumsi.
+M
+6.8 Administrasi (FR-ADM)
+ID
+Persyaratan
+Prioritas
+FR-ADM-01
+CRUD pengguna dan peran.
+M
+FR-ADM-02
+CRUD lokasi pemantauan (nama, koordinat).
+M
+FR-ADM-03
+CRUD sensor virtual dan status.
+M
+FR-ADM-04
+Manajemen ambang batas dan parameter hotspot.
+M
+FR-ADM-05
+Manajemen alert dan rekomendasi.
+M
+FR-ADM-06
+Laporan bulanan (tampilan web; ekspor PDF sebagai tambahan). Footer PDF memuat teks hak cipta (BR-04).
+S
+FR-ADM-07
+Log audit perubahan konfigurasi.
+S
+7. Persyaratan Non-Fungsional
+ID
+Kategori
+Persyaratan
+NFR-01
+Kinerja
+Respons endpoint baca (dashboard, peta) p95 ≤ 500 ms pada 10 sensor dengan interval 5–10 detik.
+NFR-02
+Skalabilitas prototipe
+Sanggup menampung ≥ 1 juta baris pembacaan tanpa degradasi kueri riwayat berarti (indeks + agregasi).
+NFR-03
+Keamanan
+HTTPS, hash Argon2id, validasi input, kueri terparameter (SQLx), CORS terbatas, rate limiting, kunci API per sensor.
+NFR-04
+Keandalan
+Simulator pulih otomatis bila satu siklus gagal; kegagalan satu sensor tidak menghentikan sensor lain.
+NFR-05
+Ketertelusuran
+Logging terstruktur (tracing) dengan ID permintaan.
+NFR-06
+Usability
+Responsif (desktop dan mobile); bahasa antarmuka Indonesia; warna tidak menjadi satu-satunya penanda (sertakan teks/ikon kategori).
+NFR-07
+Aksesibilitas
+Kontras teks memadai dan alt text pada gambar/logo.
+NFR-08
+Portabilitas
+Dapat dijalankan dengan Docker Compose (aplikasi Rust + PostgreSQL).
+NFR-09
+Integritas data
+Batasan nilai (CHECK) pada database; pembacaan di luar rentang wajar ditolak/ditandai.
+8. Aturan Perhitungan ISPU dan Kategori
+Sistem memakai satu standar secara konsisten: ISPU Indonesia (kategori dan warna di bawah).
+Nilai ISPU
+Kategori
+Warna
+0–50
+Baik
+Hijau
+51–100
+Sedang
+Biru
+101–200
+Tidak Sehat
+Kuning
+201–300
+Sangat Tidak Sehat
+Merah
+> 300
+Berbahaya
+Hitam
+Temuan validasi: brainstorming awal memuat dua skema warna yang berbeda (Bagian 3 memakai hijau-biru-kuning-merah-ungu dengan kategori "tidak sehat untuk kelompok sensitif", sedangkan Bagian 8 memakai kategori ISPU). PRD ini menetapkan skema ISPU sebagai satu-satunya acuan untuk peta, badge, dan alert.
+Ketentuan perhitungan:
+Sub-indeks tiap parameter dihitung dengan interpolasi linear antar batas (breakpoint) sesuai lampiran peraturan ISPU yang berlaku.
+Nilai ISPU suatu lokasi = sub-indeks tertinggi di antara parameter yang tersedia; parameter penyebab disimpan sebagai parameter dominan.
+Rata-rata PM2.5 tidak disamakan langsung dengan nilai ISPU.
+Suhu dan kelembapan adalah data pendukung dan tidak masuk perhitungan ISPU.
+Waktu rata-rata (mis. rata-rata bergulir 24 jam untuk partikulat) dan nilai breakpoint harus diverifikasi terhadap lampiran peraturan ISPU resmi sebelum implementasi dan dituangkan sebagai tabel konfigurasi di database, bukan angka tertanam di kode.
+Modul perhitungan ditulis sebagai fungsi murni di Rust dan diuji dengan kasus uji (unit test) pada nilai batas tiap kategori.
+9. Validasi Teknologi: Rust dan PostgreSQL
+Bagian ini memvalidasi apakah kebutuhan produk dapat dipenuhi dengan Rust dan PostgreSQL, serta perubahan terhadap rekomendasi brainstorming (Laravel/Node.js, MySQL, simulasi Python).
+9.1 Hasil validasi per kebutuhan
+Kebutuhan
+Solusi Rust/PostgreSQL
+Status
+REST API
+Axum di atas Tokio
+Sesuai
+Akses database aman tipe
+SQLx (kueri terparameter, migrasi bawaan)
+Sesuai
+Simulator IoT terjadwal
+Task Tokio (tokio::time::interval) dalam proses yang sama, menggantikan skrip Python
+Sesuai (menyederhanakan deployment)
+Pembaruan real-time
+Server-Sent Events di Axum; WebSocket tersedia bila perlu
+Sesuai
+Perhitungan ISPU
+Fungsi murni Rust + tabel breakpoint di PostgreSQL
+Sesuai
+Autentikasi
+argon2 + jsonwebtoken (atau sesi cookie)
+Sesuai
+Data geospasial
+PostgreSQL + PostGIS (tipe geography, indeks GiST)
+Sesuai
+Hotspot (aturan ambang + frekuensi)
+Kueri SQL jendela waktu + agregasi
+Sesuai
+Hotspot (DBSCAN)
+ST_ClusterDBSCAN pada PostGIS
+Sesuai (opsional)
+Riwayat besar
+Indeks (sensor_id, recorded_at), partisi tabel per bulan, materialized view agregasi jam/hari
+Sesuai
+Notifikasi ke klien
+LISTEN/NOTIFY PostgreSQL + SSE
+Sesuai
+Laporan PDF
+Pustaka PDF Rust atau render HTML ke PDF (opsional)
+Sesuai (tambahan, perlu eksperimen)
+Frontend
+React + Leaflet + Chart.js (SPA) dilayani sebagai berkas statis oleh Axum (tower-http ServeDir), atau alternatif templat server (Askama/Maud) bila ingin tanpa SPA
+Sesuai
+Machine learning
+Di luar MVP; jika perlu, layanan Python terpisah
+Ditunda
+9.2 Perubahan terhadap rekomendasi brainstorming
+Brainstorming
+PRD ini
+Alasan
+Backend Laravel / Node.js
+Rust (Axum + Tokio)
+Sesuai kebutuhan teknologi
+MySQL
+PostgreSQL (+ PostGIS)
+Sesuai kebutuhan; dukungan geospasial dan fitur jendela waktu lebih kuat
+Simulasi data Python
+Task Tokio di backend
+Satu bahasa dan satu proses; mudah didemonstrasikan
+WebSocket atau polling
+SSE (utama) + polling cadangan
+Komunikasi satu arah server ke klien sudah cukup; lebih sederhana
+React.js
+Tetap React (opsional templat server)
+Tidak bergantung pada bahasa backend
+9.3 Risiko teknologi dan mitigasi
+Risiko
+Dampak
+Mitigasi
+Kurva belajar Rust (ownership, async)
+Jadwal mundur
+Mulai dari Axum + SQLx dengan pola CRUD sederhana; hindari pustaka ORM kompleks; batasi fitur lanjutan
+Waktu kompilasi lama
+Siklus pengembangan lambat
+cargo watch, workspace terpisah, cache dependensi pada Docker
+Pustaka PDF Rust kurang matang
+Fitur ekspor terhambat
+Jadikan fitur tambahan; alternatif render HTML ke PDF
+Ekstensi PostGIS belum terpasang
+Fitur peta/hotspot spasial gagal
+Gunakan image PostGIS pada Docker; fallback kolom latitude/longitude biasa untuk MVP
+Format breakpoint ISPU salah
+Hasil tidak valid
+Verifikasi ke peraturan resmi dan uji unit nilai batas
+Kesimpulan validasi: seluruh persyaratan MVP (Prioritas Must) dapat dipenuhi dengan Rust dan PostgreSQL tanpa teknologi tambahan selain PostGIS (disarankan) dan frontend web statis. Fitur machine learning tetap di luar MVP.
+10. Arsitektur Sistem
+Virtual IoT Sensor (konfigurasi di DB)        │Simulation Engine (task Tokio: skenario, interval, seed)        │  (jalur ingest internal, setara endpoint /ingest)Backend Rust (Axum)   ├─ Validasi data   ├─ Perhitungan ISPU   ├─ Alert engine   └─ Hotspot job (terjadwal)        │ SQLxPostgreSQL (+ PostGIS)        │ REST + SSEWeb Application (React, Leaflet, Chart.js)   ├─ Publik: dashboard, peta, analitik, alert, rekomendasi, tentang   └─ Admin/Petugas: lokasi, sensor, simulasi, ambang, laporan, pengguna
+Komponen layout aplikasi (header dengan dua logo dan footer hak cipta) bersifat tunggal dan dipakai semua halaman (BR-06).
+Struktur proyek Rust (usulan)
+api/ — handler Axum, middleware autentikasi, SSE.
+domain/ — model, perhitungan ISPU, aturan hotspot, aturan alert (fungsi murni, mudah diuji).
+simulator/ — generator pembacaan dan skenario.
+jobs/ — penjadwal hotspot dan agregasi.
+migrations/ — migrasi SQLx.
+static/ — aset frontend dan logo.
+11. Rancangan Data (PostgreSQL)
+Tabel
+Atribut utama
+users
+id, name, email, password_hash, role, created_at
+locations
+id, name, geom (geography Point) atau latitude/longitude
+sensors
+id, location_id, name, status, api_key_hash, interval_seconds, scenario
+air_quality_readings
+id, sensor_id, pm25, pm10, co, no2, temperature, humidity, recorded_at
+ispu_results
+id, reading_id, subindex_pm25, subindex_pm10, ispu_value, category, dominant_param
+ispu_breakpoints
+parameter, category, conc_low, conc_high, index_low, index_high, averaging_period
+thresholds
+id, parameter, level, value, hotspot_window_hours, hotspot_percent
+alerts
+id, location_id, level, message, status, created_at, resolved_at
+recommendations
+id, category, dominant_param, description
+hotspot_results
+id, location_id, window_start, window_end, avg_pm25, pct_unhealthy, status, computed_at
+audit_logs
+id, user_id, action, entity, created_at
+Relasi: satu lokasi memiliki banyak sensor dan banyak alert; satu sensor menghasilkan banyak pembacaan; rekomendasi dihubungkan dengan kategori (dan parameter dominan).
+Catatan implementasi:
+Gunakan tipe ENUM untuk role, category, dan status.
+Gunakan CHECK (mis. nilai konsentrasi ≥ 0, kelembapan 0–100).
+Indeks: (sensor_id, recorded_at DESC) pada pembacaan; GiST pada geom.
+Partisi air_quality_readings per bulan bila data membesar; materialized view untuk agregasi jam dan hari.
+12. Rancangan API (ringkas)
+Metode
+Endpoint
+Akses
+Fungsi
+GET
+/api/overview
+Publik
+Ringkasan seluruh wilayah
+GET
+/api/locations
+Publik
+Daftar lokasi dan status terkini
+GET
+/api/locations/{id}/readings
+Publik
+Riwayat dengan filter waktu
+GET
+/api/hotspots
+Publik
+Hasil hotspot terkini
+GET
+/api/alerts
+Publik
+Alert aktif dan riwayat
+GET
+/api/recommendations
+Publik
+Rekomendasi per kategori
+GET
+/api/stream
+Publik
+SSE pembaruan data dan alert
+POST
+/api/auth/login
+Publik
+Login
+POST
+/api/ingest
+API key sensor
+Terima pembacaan sensor
+CRUD
+/api/admin/locations, /sensors, /thresholds, /recommendations, /users
+Admin
+Manajemen
+POST
+/api/admin/simulation
+Admin
+Ubah skenario, interval, aktif/nonaktif
+GET
+/api/reports/monthly
+Admin/Petugas
+Laporan bulanan
+13. Struktur Halaman
+Publik: Dashboard, Peta Kualitas Udara, Analitik, Peringatan, Rekomendasi Kesehatan, Tentang Sistem.
+Administrator/Petugas: Dashboard Admin, Manajemen Lokasi, Sensor Virtual, Kontrol Simulasi, Manajemen Alert, Laporan, Manajemen Pengguna.
+Setiap halaman: header (logo Pemerintah Kota Bandar Lampung + logo Universitas Teknokrat Indonesia) dan footer (Copyright©2026 by Nayla Dela Azzahra dan Dr. Erliyan Redy Susanto, M.Kom).
+14. Rekomendasi per Kategori (acuan awal)
+Kategori
+Rekomendasi
+Baik
+Aktivitas luar ruangan normal
+Sedang
+Kelompok sensitif perlu memperhatikan kondisi udara
+Tidak Sehat
+Kurangi aktivitas luar ruangan
+Sangat Tidak Sehat
+Hindari aktivitas luar ruangan yang tidak perlu
+Berbahaya
+Ikuti arahan kesehatan dan peringatan resmi
+Teks dapat diperinci berdasarkan parameter dominan dan pedoman kesehatan yang dipakai, bukan hanya satu angka gabungan.
+15. Prioritas dan Rencana Pengembangan
+Fase
+Cakupan
+Estimasi
+0
+Setup Rust workspace, PostgreSQL/PostGIS (Docker), migrasi, layout dengan logo dan footer
+1 minggu
+1
+Autentikasi dan peran, CRUD lokasi/sensor, model data
+2 minggu
+2
+Simulator IoT, ingest, perhitungan ISPU + unit test
+2 minggu
+3
+Dashboard, peta, grafik riwayat
+2 minggu
+4
+Hotspot, alert, rekomendasi, SSE
+2 minggu
+5
+Laporan, pengujian, perbaikan, dokumentasi
+2 minggu
+Lanjutan
+DBSCAN spasial, email, ekspor PDF, machine learning
+Setelah MVP
+Estimasi bersifat awal dan perlu disesuaikan dengan kapasitas tim.
+16. Pengujian dan Kriteria Penerimaan
+Jenis
+Fokus
+Unit test (Rust)
+ISPU pada nilai batas kategori, aturan hotspot, deduplikasi alert
+Integration test
+Simulator → ingest → database → API → dashboard
+Black box
+Setiap fitur sesuai fungsi
+Performance
+Waktu respons endpoint utama (NFR-01)
+Scenario test
+Skenario polusi memicu alert dan hotspot sesuai harapan
+UAT
+Kemudahan penggunaan oleh masyarakat dan petugas
+Uji identitas visual
+Logo dan footer muncul pada seluruh halaman (BR-01 s.d. BR-07)
+Kriteria penerimaan MVP:
+Seluruh persyaratan prioritas Must terpenuhi.
+Hasil ISPU cocok 100% dengan kasus uji.
+Hotspot ditentukan dari data periode waktu, bukan satu pembacaan.
+Setiap halaman menampilkan kedua logo di header dan teks hak cipta persis seperti BR-03 di footer.
+Semua tampilan data diberi label data simulasi.
+Aplikasi berjalan lewat Docker Compose (Rust + PostgreSQL).
+17. Asumsi, Batasan, dan Hal yang Perlu Dikonfirmasi
+Batasan: 5–10 sensor virtual; wilayah studi tunggal; parameter utama PM2.5 dan PM10 (suhu dan kelembapan pendukung); tanpa sensor fisik.
+Perlu dikonfirmasi:
+Logo Pemda dan Universitas Teknokrat Indonesia: kedua logo sudah tersedia (Pemerintah Kota Bandar Lampung dan Universitas Teknokrat Indonesia). Bila ada, mohon sediakan versi PNG transparan atau SVG agar tajam pada header dan PDF.
+Wilayah studi (Kota Bandar Lampung, sudah dikonfirmasi) untuk menentukan koordinat 5–10 lokasi simulasi.
+Versi peraturan ISPU yang menjadi acuan dan parameter yang diimplementasikan (minimal PM2.5 dan PM10).
+Pilihan frontend: React SPA atau templat server Rust.
+Apakah ekspor PDF dan notifikasi email diwajibkan pada versi pertama.
+18. Pernyataan Hak Cipta
+Copyright©2026 by Nayla Dela Azzahra dan Dr. Erliyan Redy Susanto, M.Kom

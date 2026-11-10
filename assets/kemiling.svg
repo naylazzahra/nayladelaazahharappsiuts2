@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 300" width="100%" height="100%" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="kemSky" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#4fc3f7"/>
+      <stop offset="60%" stop-color="#b3e5fc"/>
+      <stop offset="100%" stop-color="#e1f5fe"/>
+    </linearGradient>
+    <linearGradient id="mtnFar" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#80cbc4"/>
+      <stop offset="100%" stop-color="#26a69a"/>
+    </linearGradient>
+    <linearGradient id="mtnNear" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#4caf50"/>
+      <stop offset="100%" stop-color="#1b5e20"/>
+    </linearGradient>
+  </defs>
+  <!-- Sky -->
+  <rect width="600" height="300" fill="url(#kemSky)"/>
+  <!-- Sun -->
+  <circle cx="500" cy="80" r="35" fill="#fff59d" opacity="0.9"/>
+  <!-- Far Mountain (Gunung Betung) -->
+  <path d="M-50,220 Q120,80 320,180 Q450,90 650,230 L650,300 L-50,300 Z" fill="url(#mtnFar)" opacity="0.8"/>
+  <!-- Near Hills (Kemiling Ridges) -->
+  <path d="M-20,240 Q180,140 400,220 Q520,160 620,250 L620,300 L-20,300 Z" fill="url(#mtnNear)"/>
+  <!-- Foreground Trees -->
+  <circle cx="80" cy="270" r="40" fill="#2e7d32"/>
+  <circle cx="140" cy="280" r="35" fill="#1b5e20"/>
+  <circle cx="210" cy="275" r="45" fill="#388e3c"/>
+  <circle cx="480" cy="285" r="40" fill="#1b5e20"/>
+  <circle cx="540" cy="270" r="50" fill="#2e7d32"/>
+</svg>
+
